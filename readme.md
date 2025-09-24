@@ -30,7 +30,7 @@ npx tsc --init
 
 ### 📝 3. Git Configuration
 
-Add a .gitignore file to exclude build artifacts and dependencies.
+Add a `.gitignore` file to exclude build artifacts and dependencies.
 
 - If using VS Code, you can install the **gitignore extension** to quickly generate one.
 
@@ -102,4 +102,14 @@ Run the server in development mode:
 yarn dev
 ```
 
-... and all set!
+### 🌱 7. Environment Variables
+
+Install `dotenv` to manage environment variables:
+
+```bash
+yarn add dotenv
+
+yarn add -D @types/dotenv
+```
+
+### 🗄️ 8. MongoDB + Mongoose Integration

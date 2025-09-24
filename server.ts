@@ -1,7 +1,8 @@
 import app from "./src/app";
+import { config } from "./src/config/config";
 
 const initiateServer = () => {
-  const port = process.env.PORT || 3210;
+  const port = config.port || 3210;
 
   // Routes
   app.get("/", (req, res) => {
