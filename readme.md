@@ -197,3 +197,22 @@ const globalErrorHander = (
 
 export default globalErrorHander;
 ```
+
+---
+
+### 📂 Folder structure
+
+📦 backend
+┣ 📂 src
+┃ ┣ 📂 config
+┃ ┃ ┗ 📜 config.ts
+┃ ┣ 📂 db
+┃ ┃ ┗ 📜 db.ts
+┃ ┣ 📂 middlewares
+┃ ┃ ┗ 📜 errorHandler.ts
+┃ ┃ 📜 server.ts
+┣ 📜 nodemon.json
+┣ 📜 tsconfig.json
+┣ 📜 package.json
+┣ 📜 .env
+┗ 📜 .gitignore
