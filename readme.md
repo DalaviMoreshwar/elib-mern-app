@@ -4,6 +4,8 @@
 
 This document provides step-by-step instructions for setting up a TypeScript-powered Node.js + Express backend for a MERN stack application.
 
+---
+
 ### 📂 1. Project Initialization
 
 Start by creating a new project
@@ -13,6 +15,8 @@ yarn init
 ```
 
 This will generate a `package.json` file with default settings.
+
+---
 
 ### ⚙️ 2. TypeScript & Development Tools
 
@@ -28,11 +32,15 @@ Generate a default **TypeScript configuration file**:
 npx tsc --init
 ```
 
+---
+
 ### 📝 3. Git Configuration
 
 Add a `.gitignore` file to exclude build artifacts and dependencies.
 
 - If using VS Code, you can install the **gitignore extension** to quickly generate one.
+
+---
 
 ### 📦 4. Express Installation
 
@@ -43,6 +51,8 @@ yarn add express
 
 yarn add -D @types/express
 ```
+
+---
 
 ### 🔧 5. Runtime Configuration
 
@@ -94,6 +104,8 @@ Update key options in your `tsconfig.json`:
 
 - `"target": "esnext"` → compiles to modern JavaScript.
 
+---
+
 ### 🚀 6. Start the Server
 
 Run the server in development mode:
@@ -101,6 +113,8 @@ Run the server in development mode:
 ```bash
 yarn dev
 ```
+
+---
 
 ### 🌱 7. Environment Variables
 
@@ -112,4 +126,42 @@ yarn add dotenv
 yarn add -D @types/dotenv
 ```
 
+---
+
 ### 🗄️ 8. MongoDB + Mongoose Integration
+
+Install Dependencies
+
+```bash
+yarn add mongoose
+
+yarn add -D @types/mongoose
+```
+
+`db.ts`
+
+```typescript
+import mongoose from "mongoose";
+import { config } from "./config";
+
+const connectDB = async () => {
+  try {
+    mongoose.connection.on("connected", () => {
+      console.log(`🫱🏻‍🫲🏻 Database handshake success!`);
+    });
+
+    mongoose.connection.on("error", (error) => {
+      console.log(`Error in connecting database -  ${error}`);
+    });
+
+    await mongoose.connect(config.databaseUrl as string);
+  } catch (error) {
+    console.log(`Failed to connect database: ${error}`);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
+```
+
+---
