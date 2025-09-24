@@ -1,36 +1,42 @@
-# 🚀 MERN APP
+# 🚀 MERN App
 
-## Backend Configuration
+## Backend Setup Guide
 
-### Step 01
+This document provides step-by-step instructions for setting up a TypeScript-powered Node.js + Express backend for a MERN stack application.
 
-Initiate project with
+### 📂 1. Project Initialization
+
+Start by creating a new project
 
 ```bash
 yarn init
 ```
 
-### Step 02
+This will generate a `package.json` file with default settings.
 
-Configure `typescript`
+### ⚙️ 2. TypeScript & Development Tools
+
+Install TypeScript, `ts-node`, `nodemon`, and Node.js type definitions:
 
 ```bash
 yarn add -D typescript ts-node nodemon @types/node
 ```
 
-initialize a `tsconfig` file
+Generate a default **TypeScript configuration file**:
 
 ```bash
 npx tsc --init
 ```
 
-### Step 03
+### 📝 3. Git Configuration
 
-Initialize `.gitignore` file with the help of VS code extention `gitignore`.
+Add a .gitignore file to exclude build artifacts and dependencies.
 
-### Step 04
+- If using VS Code, you can install the **gitignore extension** to quickly generate one.
 
-Install `express` with types.
+### 📦 4. Express Installation
+
+Install Express and its type definitions:
 
 ```bash
 yarn add express
@@ -38,11 +44,11 @@ yarn add express
 yarn add -D @types/express
 ```
 
-### Step 05
+### 🔧 5. Runtime Configuration
 
-Configure run envoirnment with `package.json`, `nodemon`, `tsconfig` files.
+`package.json`
 
-Add following scripts in `package.json`
+Update your `package.json` with the following:
 
 ```json
   "type": "commonjs",
@@ -52,7 +58,9 @@ Add following scripts in `package.json`
   }
 ```
 
-Create a `nodemon.json` file at root level of project and add following scripts.
+`nodemon.json`
+
+Create a `nodemon.json` file in the project root:
 
 ```json
 {
@@ -63,13 +71,35 @@ Create a `nodemon.json` file at root level of project and add following scripts.
 }
 ```
 
-Edit `tsconfig` file with following props.
+This tells **nodemon** to watch `.ts` files, ignore compiled output, and execute via `ts-node`.
+
+`tsconfig.json`
+
+Update key options in your `tsconfig.json`:
 
 ```json
-"module": "commonjs",
-"esModuleInterop": true,
-"target": "esnext",
-"verbatimModuleSyntax": false,
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "esnext",
+    "verbatimModuleSyntax": false
+  }
+}
+```
+
+- `"verbatimModuleSyntax": false` → allows using import/export syntax even in CommonJS mode.
+
+- `"esModuleInterop": true` → ensures compatibility with CommonJS modules like Express.
+
+- `"target": "esnext"` → compiles to modern JavaScript.
+
+### 🚀 6. Start the Server
+
+Run the server in development mode:
+
+```bash
+yarn dev
 ```
 
 ... and all set!
