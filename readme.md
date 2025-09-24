@@ -165,3 +165,35 @@ export default connectDB;
 ```
 
 ---
+
+### ⚠️ 9. Global Error Handling Setup
+
+```bash
+yarn add http-errors
+
+yarn add -D @types/http-errors
+```
+
+Usage of `http-errors` package and middleware function.
+
+```typescript
+import { NextFunction, Request, Response } from "express";
+import { HttpError } from "http-errors";
+import { config } from "../config/config";
+
+const globalErrorHander = (
+  error: HttpError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const statusCode = error.statusCode || 500;
+
+  return res.status(statusCode).json({
+    message: error.message,
+    errorStack: config.env === "dev" ? error.stack : "",
+  });
+};
+
+export default globalErrorHander;
+```
