@@ -17,6 +17,7 @@
     "@types/http-errors": "^2.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.97",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.5.2",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
@@ -28,6 +29,7 @@
     "express": "^5.1.0",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.18.2"
+    "mongoose": "^8.18.2",
+    "multer": "^2.0.2"
   }
 }
