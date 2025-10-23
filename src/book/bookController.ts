@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import cloudinary from "../config/cloudinary";
 import createHttpError from "http-errors";
+import bookModel from "./bookModel";
+import fs from "node:fs";
 
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -26,14 +28,31 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
         return next(createHttpError(500, error));
       });
 
-    res.json({
-      message: "Uploaded successfully!",
-      coverImgURL: uploadCoverImgResult?.url,
-      bookURL: uploadBookFileResult?.url,
+    const newBook = await bookModel.create({
+      title: req.body.title,
+      author: req.body.author,
+      genere: req.body.genere,
+      coverImage: uploadCoverImgResult?.secure_url,
+      bookFile: uploadBookFileResult?.secure_url,
     });
-  } catch (error) {
+
+    // Delete temp files
+    try {
+      await fs.promises.unlink(coverImgPath);
+      await fs.promises.unlink(bookFilePath);
+      console.log(`Files deleted from local.`);
+    } catch (error: any) {
+      console.log(`Error::: ${error}`);
+      return next(createHttpError(500, error));
+    }
+
+    res.status(201).json({
+      message: "Uploaded successfully!",
+      book: newBook,
+    });
+  } catch (error: any) {
     console.log(`Error::: ${error}`);
-    return next(createHttpError(500, "Error whilr uploading the files."));
+    return next(createHttpError(500, error));
   }
 };
 
