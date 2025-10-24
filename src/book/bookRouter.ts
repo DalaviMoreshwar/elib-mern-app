@@ -2,7 +2,7 @@ import path from "node:path";
 import express from "express";
 import multer from "multer";
 
-import { createBook, listBooks, updateBook } from "./bookController";
+import { createBook, getBook, listBooks, updateBook } from "./bookController";
 import authenticate from "../middlewares/authenticate.middleware";
 
 const imgStorage = multer.diskStorage({
@@ -19,6 +19,8 @@ const upload = multer({ storage: imgStorage, limits: { fileSize: 1e7 } });
 const bookRouter = express.Router();
 
 bookRouter.get("/", listBooks);
+
+bookRouter.get("/:bookId", getBook);
 
 bookRouter.post(
   "/",
