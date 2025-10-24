@@ -60,7 +60,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     );
 
     // response
-    res.status(201).json({ accessToken: token });
+    res.status(201).json({ message: "Register success!", accessToken: token });
   } catch (error) {
     return next(createHttpError(500, "Error while accessing the jwt token"));
   }
@@ -104,7 +104,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
     );
 
     // response
-    res.status(200).json({ accessToken: token });
+    res.status(200).json({ message: "Login success!", accessToken: token });
   } catch (error) {
     return next(error);
   }

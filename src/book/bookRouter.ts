@@ -2,7 +2,7 @@ import path from "node:path";
 import express from "express";
 import multer from "multer";
 
-import { createBook } from "./bookController";
+import { createBook, updateBook } from "./bookController";
 import authenticate from "../middlewares/authenticate.middleware";
 
 const imgStorage = multer.diskStorage({
@@ -23,6 +23,13 @@ bookRouter.post(
   authenticate,
   upload.fields([{ name: "coverImage" }, { name: "bookFile" }]),
   createBook
+);
+
+bookRouter.patch(
+  "/:bookId",
+  authenticate,
+  upload.fields([{ name: "coverImage" }, { name: "bookFile" }]),
+  updateBook
 );
 
 export default bookRouter;
