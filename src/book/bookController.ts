@@ -142,4 +142,15 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createBook, updateBook };
+const listBooks = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // TODO: add pagenation - mongoose pagination
+    const books = await bookModel.find();
+
+    res.status(200).json(books);
+  } catch (error: any) {
+    return next(createHttpError(500, error));
+  }
+};
+
+export { createBook, updateBook, listBooks };
