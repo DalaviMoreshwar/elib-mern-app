@@ -169,4 +169,30 @@ const getBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createBook, updateBook, listBooks, getBook };
+const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { bookId } = req.params;
+
+    const book = await bookModel.findOne({ _id: bookId });
+    if (!book) {
+      return next(createHttpError(404, "Book not found for delete!"));
+    }
+
+    // Check access
+    const _req = req as AuthRequest;
+
+    if (book.author.toString() !== _req.userId) {
+      return next(
+        createHttpError(403, "You're unauthorized user to delete this book")
+      );
+    }
+
+    const deletedBook = await bookModel.deleteOne({ _id: bookId });
+
+    res.status(200).json({ message: "Book is deleted successfully" });
+  } catch (error: any) {
+    return next(createHttpError(500, error));
+  }
+};
+
+export { createBook, updateBook, listBooks, getBook, deleteBook };
