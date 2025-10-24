@@ -3,6 +3,7 @@ import express from "express";
 import multer from "multer";
 
 import { createBook } from "./bookController";
+import authenticate from "../middlewares/authenticate.middleware";
 
 const imgStorage = multer.diskStorage({
   destination: function (req, res, cb) {
@@ -19,6 +20,7 @@ const bookRouter = express.Router();
 
 bookRouter.post(
   "/",
+  authenticate,
   upload.fields([{ name: "coverImage" }, { name: "bookFile" }]),
   createBook
 );
