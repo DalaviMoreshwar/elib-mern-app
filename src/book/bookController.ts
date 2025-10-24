@@ -187,9 +187,25 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
+    const coverImgURISplits = book.coverImage.split("/");
+    const coverImagePublicId =
+      coverImgURISplits.at(-2) + "/" + coverImgURISplits.at(-1)?.split(".")[0];
+
+    const fileURISplits = book.bookFile.split("/");
+    const filePublicId = fileURISplits.at(-2) + "/" + fileURISplits.at(-1);
+
+    try {
+      await cloudinary.uploader.destroy(coverImagePublicId);
+      await cloudinary.uploader.destroy(filePublicId, {
+        resource_type: "raw",
+      });
+    } catch (error: any) {
+      return next(createHttpError(500, error));
+    }
+
     const deletedBook = await bookModel.deleteOne({ _id: bookId });
 
-    res.status(200).json({ message: "Book is deleted successfully" });
+    res.status(204).json({ coverImagePublicId, filePublicId });
   } catch (error: any) {
     return next(createHttpError(500, error));
   }
