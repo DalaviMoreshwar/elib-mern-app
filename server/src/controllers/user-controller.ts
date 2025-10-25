@@ -1,14 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
 
-import userModels from "../models/user-model";
-import userModel from "../models/user-model";
-import { config } from "../config/config";
-import { User } from "../types/user-types";
+import { User } from "../types/user-types.js";
 
-const { sign } = jwt;
+import userModels from "../models/user-model.js";
+import userModel from "../models/user-model.js";
+import tokenGen from "../services/token-generation-service.js";
 
 const createUserCtrl = async (
   req: Request,
@@ -19,8 +17,7 @@ const createUserCtrl = async (
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    const error = createHttpError(400, "All fields are required");
-    return next(error);
+    return next(createHttpError(400, "All fields are required"));
   }
 
   // database calls
@@ -28,11 +25,9 @@ const createUserCtrl = async (
     const user = await userModels.findOne({ email });
 
     if (user) {
-      const error = createHttpError(
-        "400",
-        "User already exists with this email!"
+      return next(
+        createHttpError("400", "User already exists with this email!")
       );
-      return next(error);
     }
   } catch (error) {
     return next(createHttpError("500", "Error while getting user."));
@@ -54,16 +49,7 @@ const createUserCtrl = async (
 
   try {
     // jwt token generation
-    const token = sign(
-      {
-        sub: newUser._id,
-      },
-      config.jwtSecret as string,
-      {
-        expiresIn: "7d",
-        algorithm: "HS256",
-      }
-    );
+    const token = tokenGen(newUser._id);
 
     // response
     res.status(201).json({ message: "Register success!", accessToken: token });
@@ -101,17 +87,9 @@ const loginUserCtrl = async (
     if (!isMatch) {
       return next(createHttpError(400, "Username or password is incorrect!"));
     }
+
     // jwt token generation
-    const token = sign(
-      {
-        sub: (await user)._id,
-      },
-      config.jwtSecret as string,
-      {
-        expiresIn: "7d",
-        algorithm: "HS256",
-      }
-    );
+    const token = tokenGen(user._id);
 
     // response
     res.status(200).json({ message: "Login success!", accessToken: token });
