@@ -58,7 +58,11 @@ function generatePdfFileSplitKey(fileUrl: string) {
 }
 
 // Controller: create a book
-const createBook = async (req: Request, res: Response, next: NextFunction) => {
+const createBookCtrl = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
@@ -105,7 +109,11 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Controller: update a book
-const updateBook = async (req: Request, res: Response, next: NextFunction) => {
+const updateBookCtrl = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
@@ -190,7 +198,11 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const listBooks = async (req: Request, res: Response, next: NextFunction) => {
+const listBooksCtrl = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // TODO: add pagenation - mongoose pagination
     const books = await bookModel.find();
@@ -201,7 +213,7 @@ const listBooks = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getBook = async (req: Request, res: Response, next: NextFunction) => {
+const getBookCtrl = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { bookId } = req.params;
 
@@ -217,7 +229,11 @@ const getBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+const deleteBookCtrl = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { bookId } = req.params;
 
@@ -256,4 +272,10 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createBook, updateBook, listBooks, getBook, deleteBook };
+export {
+  createBookCtrl,
+  updateBookCtrl,
+  listBooksCtrl,
+  getBookCtrl,
+  deleteBookCtrl,
+};

@@ -1,46 +1,35 @@
 import express from "express";
-import multer from "multer";
 
+import upload from "./../services/file-storage-service.js";
+import authenticate from "../middlewares/authenticate-middleware.js";
 import {
-  createBook,
-  deleteBook,
-  getBook,
-  listBooks,
-  updateBook,
-} from "../controllers/book-controller";
-import authenticate from "../middlewares/authenticate-middleware";
+  createBookCtrl,
+  deleteBookCtrl,
+  getBookCtrl,
+  listBooksCtrl,
+  updateBookCtrl,
+} from "../controllers/book-controller.js";
 
-const imgStorage = multer.diskStorage({
-  destination: function (req, res, cb) {
-    return cb(null, "./public/uploads");
-  },
-  filename: function (req, file, cb) {
-    return cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+const bookRoutes = express.Router();
 
-const upload = multer({ storage: imgStorage, limits: { fileSize: 1e7 } });
+bookRoutes.get("/", listBooksCtrl);
 
-const bookRouter = express.Router();
+bookRoutes.get("/:bookId", getBookCtrl);
 
-bookRouter.get("/", listBooks);
+bookRoutes.delete("/:bookId", authenticate, deleteBookCtrl);
 
-bookRouter.get("/:bookId", getBook);
-
-bookRouter.delete("/:bookId", authenticate, deleteBook);
-
-bookRouter.post(
+bookRoutes.post(
   "/",
   authenticate,
   upload.fields([{ name: "coverImage" }, { name: "bookFile" }]),
-  createBook
+  createBookCtrl
 );
 
-bookRouter.patch(
+bookRoutes.patch(
   "/:bookId",
   authenticate,
   upload.fields([{ name: "coverImage" }, { name: "bookFile" }]),
-  updateBook
+  updateBookCtrl
 );
 
-export default bookRouter;
+export default bookRoutes;
