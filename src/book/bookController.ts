@@ -11,8 +11,8 @@ async function uploadImgOnCloud(imgFilePath: string) {
       folder: "cover-images",
     })
     .catch((error) => {
-      console.log(`in side function::: `, error);
-      return error;
+      console.log("Img File upload fail::: ", error);
+      throw new Error("Failed to upload file to cloudinary");
     });
 
   return result;
@@ -25,7 +25,8 @@ async function uploadFileOnCloud(filePath: string) {
       resource_type: "raw",
     })
     .catch((error) => {
-      return error;
+      console.log("File upload fail::: ", error);
+      throw new Error("Failed to upload file to cloudinary");
     });
 
   return result;
@@ -38,7 +39,22 @@ async function unlinkFile(relativePath: string) {
     console.log(`Files deleted from local.`);
   } catch (error: any) {
     console.log(`Error::: ${error}`);
+    throw new Error("No such file or directory, unlink ''");
   }
+}
+
+function generateImgSplitKey(imgUrl: string) {
+  const baseStr = imgUrl.split("/");
+  const splitedResultSrt = baseStr.at(-2) + "/" + baseStr.at(-1)?.split(".")[0];
+
+  return splitedResultSrt;
+}
+
+function generatePdfFileSplitKey(fileUrl: string) {
+  const baseStr = fileUrl.split("/");
+  const splitedResultStr = baseStr.at(-2) + "/" + baseStr.at(-1);
+
+  return splitedResultStr;
 }
 
 // Controller: create a book
@@ -46,15 +62,30 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-    const coverImgPath = files?.coverImage?.[0]?.path || "";
-    const bookFilePath = files?.bookFile?.[0]?.path || "";
+    const coverImgPath = files?.coverImage?.[0]?.path ?? "";
+    const bookFilePath = files?.bookFile?.[0]?.path ?? "";
 
+    // Validate required files
+    if (!files?.coverImage?.[0] || !files?.bookFile?.[0]) {
+      // Clean-up local files
+      unlinkFile(coverImgPath);
+      unlinkFile(bookFilePath);
+
+      return next(
+        createHttpError(400, "Both cover image and book file are required.")
+      );
+    }
+
+    // Upload files on cloudinay
     const uploadCoverImgResult = await uploadImgOnCloud(coverImgPath);
-
     const uploadBookFileResult = await uploadFileOnCloud(bookFilePath);
 
-    const _req = req as AuthRequest;
+    // Clean-up local files
+    unlinkFile(coverImgPath);
+    unlinkFile(bookFilePath);
 
+    // Type casting
+    const _req = req as AuthRequest;
     const newBook = await bookModel.create({
       title: req.body.title,
       author: _req.userId,
@@ -62,9 +93,6 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       coverImage: uploadCoverImgResult.secure_url,
       bookFile: uploadBookFileResult?.secure_url,
     });
-
-    unlinkFile(coverImgPath);
-    unlinkFile(bookFilePath);
 
     res.status(201).json({
       message: "Book created successfully!",
@@ -105,6 +133,15 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     // check if the image and file fields are exist or not
     let coverImgURI = "";
     if (files?.coverImage) {
+      // delete old image before update new one
+      const coverImagePublicId = generateImgSplitKey(book.coverImage);
+
+      try {
+        await cloudinary.uploader.destroy(coverImagePublicId);
+      } catch (error: any) {
+        return next(createHttpError(500, error));
+      }
+
       const uploadCoverImgResult = await uploadImgOnCloud(coverImgPath);
       coverImgURI = uploadCoverImgResult.secure_url;
       unlinkFile(coverImgPath);
@@ -112,6 +149,17 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 
     let bookURI = "";
     if (files?.bookFile) {
+      // delete old book pdf before update new one
+      const filePublicId = generatePdfFileSplitKey(book.bookFile);
+
+      try {
+        await cloudinary.uploader.destroy(filePublicId, {
+          resource_type: "raw",
+        });
+      } catch (error: any) {
+        return next(createHttpError(500, error));
+      }
+
       const uploadBookFileResult = await uploadFileOnCloud(bookFilePath);
       bookURI = uploadBookFileResult.secure_url;
       unlinkFile(bookFilePath);
@@ -187,12 +235,9 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    const coverImgURISplits = book.coverImage.split("/");
-    const coverImagePublicId =
-      coverImgURISplits.at(-2) + "/" + coverImgURISplits.at(-1)?.split(".")[0];
+    const coverImagePublicId = generateImgSplitKey(book.coverImage);
 
-    const fileURISplits = book.bookFile.split("/");
-    const filePublicId = fileURISplits.at(-2) + "/" + fileURISplits.at(-1);
+    const filePublicId = generatePdfFileSplitKey(book.bookFile);
 
     try {
       await cloudinary.uploader.destroy(coverImagePublicId);

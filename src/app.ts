@@ -15,14 +15,6 @@ app.use(
 app.use(express.json());
 app.use(urlencoded({ extended: false }));
 
-// routes
-app.get("/", (req, res, next) => {
-  const error = createHttpError(400, "Somthing went wrong!");
-  throw error;
-
-  res.json({ message: "Winter is coming!" });
-});
-
 // user register route
 app.use("/api/users", userRouter);
 

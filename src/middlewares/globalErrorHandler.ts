@@ -12,7 +12,7 @@ const globalErrorHander = (
 
   return res.status(statusCode).json({
     message: error.message,
-    errorStack: config.env === "dev" ? error.stack : "",
+    errorStack: config.env === "dev" ? error.stack : error.cause,
   });
 };
 
