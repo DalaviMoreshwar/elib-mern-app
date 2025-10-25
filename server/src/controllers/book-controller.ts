@@ -1,61 +1,22 @@
 import { NextFunction, Request, Response } from "express";
-import cloudinary from "../config/cloudinary";
 import createHttpError from "http-errors";
-import bookModel from "../models/book-model";
-import fs from "node:fs";
-import { AuthRequest } from "../middlewares/authenticate-middleware";
 
-async function uploadImgOnCloud(imgFilePath: string) {
-  const result = await cloudinary.uploader
-    .upload(imgFilePath, {
-      folder: "cover-images",
-    })
-    .catch((error) => {
-      console.log("Img File upload fail::: ", error);
-      throw new Error("Failed to upload file to cloudinary");
-    });
+import { AuthRequest } from "../types/global-types.js";
+import {
+  generateImgSplitKey,
+  generatePdfFileSplitKey,
+  unlinkFile,
+  uploadPdfFileOnCloud,
+  uploadImgFileOnCloud,
+} from "../utils/index.js";
+import {
+  createBookQuery,
+  getBookQuery,
+  updateBookQuery,
+} from "../repositories/book-repository.js";
 
-  return result;
-}
-
-async function uploadFileOnCloud(filePath: string) {
-  const result = await cloudinary.uploader
-    .upload(filePath, {
-      folder: "books",
-      resource_type: "raw",
-    })
-    .catch((error) => {
-      console.log("File upload fail::: ", error);
-      throw new Error("Failed to upload file to cloudinary");
-    });
-
-  return result;
-}
-
-async function unlinkFile(relativePath: string) {
-  // Delete temp files
-  try {
-    await fs.promises.unlink(relativePath);
-    console.log(`Files deleted from local.`);
-  } catch (error: any) {
-    console.log(`Error::: ${error}`);
-    throw new Error("No such file or directory, unlink ''");
-  }
-}
-
-function generateImgSplitKey(imgUrl: string) {
-  const baseStr = imgUrl.split("/");
-  const splitedResultSrt = baseStr.at(-2) + "/" + baseStr.at(-1)?.split(".")[0];
-
-  return splitedResultSrt;
-}
-
-function generatePdfFileSplitKey(fileUrl: string) {
-  const baseStr = fileUrl.split("/");
-  const splitedResultStr = baseStr.at(-2) + "/" + baseStr.at(-1);
-
-  return splitedResultStr;
-}
+import cloudinary from "../config/cloudinary.js";
+import bookModel from "../models/book-model.js";
 
 // Controller: create a book
 const createBookCtrl = async (
@@ -81,22 +42,18 @@ const createBookCtrl = async (
     }
 
     // Upload files on cloudinay
-    const uploadCoverImgResult = await uploadImgOnCloud(coverImgPath);
-    const uploadBookFileResult = await uploadFileOnCloud(bookFilePath);
+    const uploadCoverImgResult = await uploadImgFileOnCloud(coverImgPath);
+    const uploadBookFileResult = await uploadPdfFileOnCloud(bookFilePath);
 
     // Clean-up local files
     unlinkFile(coverImgPath);
     unlinkFile(bookFilePath);
 
-    // Type casting
-    const _req = req as AuthRequest;
-    const newBook = await bookModel.create({
-      title: req.body.title,
-      author: _req.userId,
-      genre: req.body.genre,
-      coverImage: uploadCoverImgResult.secure_url,
-      bookFile: uploadBookFileResult?.secure_url,
-    });
+    const newBook = await createBookQuery(
+      req,
+      uploadCoverImgResult.secure_url,
+      uploadBookFileResult.secure_url
+    );
 
     res.status(201).json({
       message: "Book created successfully!",
@@ -117,14 +74,13 @@ const updateBookCtrl = async (
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-    const { title, genre } = req.body;
-    const { bookId } = req.params;
-
     const coverImgPath = files?.coverImage?.[0]?.path || "";
     const bookFilePath = files?.bookFile?.[0]?.path || "";
 
+    const { bookId } = req.params;
+
     // Check book is already exist or not in db
-    const book = await bookModel.findOne({ _id: bookId });
+    const book = await getBookQuery(bookId);
 
     if (!book) {
       return next(createHttpError(404, "Book not found"));
@@ -143,15 +99,15 @@ const updateBookCtrl = async (
     if (files?.coverImage) {
       // delete old image before update new one
       const coverImagePublicId = generateImgSplitKey(book.coverImage);
-
       try {
         await cloudinary.uploader.destroy(coverImagePublicId);
       } catch (error: any) {
         return next(createHttpError(500, error));
       }
 
-      const uploadCoverImgResult = await uploadImgOnCloud(coverImgPath);
+      const uploadCoverImgResult = await uploadImgFileOnCloud(coverImgPath);
       coverImgURI = uploadCoverImgResult.secure_url;
+
       unlinkFile(coverImgPath);
     }
 
@@ -159,7 +115,6 @@ const updateBookCtrl = async (
     if (files?.bookFile) {
       // delete old book pdf before update new one
       const filePublicId = generatePdfFileSplitKey(book.bookFile);
-
       try {
         await cloudinary.uploader.destroy(filePublicId, {
           resource_type: "raw",
@@ -168,24 +123,18 @@ const updateBookCtrl = async (
         return next(createHttpError(500, error));
       }
 
-      const uploadBookFileResult = await uploadFileOnCloud(bookFilePath);
+      const uploadBookFileResult = await uploadPdfFileOnCloud(bookFilePath);
       bookURI = uploadBookFileResult.secure_url;
+
       unlinkFile(bookFilePath);
     }
 
-    const updatedBook = await bookModel.findOneAndUpdate(
-      {
-        _id: bookId,
-      },
-      {
-        title,
-        genre,
-        coverImage: coverImgURI ? coverImgURI : book.coverImage,
-        bookFile: bookURI ? bookURI : book.bookFile,
-      },
-      {
-        new: true,
-      }
+    const updatedBook = await updateBookQuery(
+      req,
+      coverImgURI,
+      bookURI,
+      book.coverImage,
+      book.bookFile
     );
 
     res.status(200).json({
@@ -217,7 +166,7 @@ const getBookCtrl = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { bookId } = req.params;
 
-    const book = await bookModel.findOne({ _id: bookId });
+    const book = await getBookQuery(bookId);
 
     if (!book) {
       return next(createHttpError(404, "Book not found!"));
@@ -237,7 +186,7 @@ const deleteBookCtrl = async (
   try {
     const { bookId } = req.params;
 
-    const book = await bookModel.findOne({ _id: bookId });
+    const book = await getBookQuery(bookId);
     if (!book) {
       return next(createHttpError(404, "Book not found for delete!"));
     }

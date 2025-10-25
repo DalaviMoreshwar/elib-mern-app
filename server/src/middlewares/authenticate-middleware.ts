@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import jwt from "jsonwebtoken";
-import { config } from "../config/config";
 
-export interface AuthRequest extends Request {
-  userId: string;
-}
+import { config } from "../config/config.js";
+import { AuthRequest } from "../types/global-types.js";
 
 const { verify } = jwt;
 
