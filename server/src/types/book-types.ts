@@ -1,4 +1,4 @@
-import { User } from "../user/userTypes";
+import { User } from "./user-types";
 
 export interface Book {
   _id: string;

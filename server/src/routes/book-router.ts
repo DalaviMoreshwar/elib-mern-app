@@ -1,4 +1,3 @@
-import path from "node:path";
 import express from "express";
 import multer from "multer";
 
@@ -8,8 +7,8 @@ import {
   getBook,
   listBooks,
   updateBook,
-} from "./bookController";
-import authenticate from "../middlewares/authenticate.middleware";
+} from "../controllers/book-controller";
+import authenticate from "../middlewares/authenticate-middleware";
 
 const imgStorage = multer.diskStorage({
   destination: function (req, res, cb) {

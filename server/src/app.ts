@@ -1,10 +1,11 @@
 import express, { urlencoded } from "express";
-import createHttpError from "http-errors";
-import globalErrorHander from "./middlewares/globalErrorHandler";
-import userRouter from "./user/userRouter";
-import bookRouter from "./book/bookRouter";
 import cors from "cors";
+
 import { config } from "./config/config";
+import globalErrorHander from "./middlewares/globalErrorHandler-middleware";
+
+import userRouter from "./routes/user-router";
+import bookRouter from "./routes/book-router";
 
 const app = express();
 app.use(
