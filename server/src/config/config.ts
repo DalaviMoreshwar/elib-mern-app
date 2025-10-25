@@ -1,7 +1,3 @@
-import { config as envConfig } from "dotenv";
-
-envConfig();
-
 const _config = {
   port: process.env.PORT,
   connectionString: process.env.MONGODB_CONNECTION_STRING,
