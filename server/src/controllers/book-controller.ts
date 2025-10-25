@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import cloudinary from "../config/cloudinary";
 import createHttpError from "http-errors";
-import bookModel from "./bookModel";
+import bookModel from "../models/book-model";
 import fs from "node:fs";
-import { AuthRequest } from "../middlewares/authenticate.middleware";
+import { AuthRequest } from "../middlewares/authenticate-middleware";
 
 async function uploadImgOnCloud(imgFilePath: string) {
   const result = await cloudinary.uploader

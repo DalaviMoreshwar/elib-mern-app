@@ -4,16 +4,16 @@ import { config } from "./config";
 const connectDB = async () => {
   try {
     mongoose.connection.on("connected", () => {
-      console.log(`🫱🏻‍🫲🏻 Database handshake success!`);
+      console.log(`✅ Database handshake success!`);
     });
 
     mongoose.connection.on("error", (error) => {
-      console.log(`Error in connecting database -  ${error}`);
+      console.log(`👽 Error in connecting database::: ${error}`);
     });
 
-    await mongoose.connect(config.databaseUrl as string);
+    await mongoose.connect(config.connectionString as string);
   } catch (error) {
-    console.log(`Failed to connect database: ${error}`);
+    console.log(`🐞 Failed to connect database::: ${error}`);
     process.exit(1);
   }
 };

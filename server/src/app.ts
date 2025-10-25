@@ -1,12 +1,14 @@
 import express, { urlencoded } from "express";
-import createHttpError from "http-errors";
-import globalErrorHander from "./middlewares/globalErrorHandler";
-import userRouter from "./user/userRouter";
-import bookRouter from "./book/bookRouter";
 import cors from "cors";
-import { config } from "./config/config";
+
+import { config } from "./config/config.js";
+import globalErrorHander from "./middlewares/globalErrorHandler-middleware.js";
+
+import userRouter from "./routes/user-router.js";
+import bookRouter from "./routes/book-router.js";
 
 const app = express();
+
 app.use(
   cors({
     origin: config.frontendDomain,
